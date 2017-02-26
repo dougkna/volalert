@@ -4,11 +4,11 @@ class NotFound extends Component {
   render() {
     return (
       <section>
-        <h2 ref="title">404. Not found.</h2>
+        <h2 ref="title">-_-;;;</h2>
         <p>
-          <img src="http://i.imgur.com/ooWW6.gif" />
+          <img src="http://i.imgur.com/MOWEwaV.jpg" />
         </p>
-        <p><a href="/">Go to index</a></p>
+        <p><a href="/">Go Home</a></p>
       </section>
     );
   }

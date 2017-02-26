@@ -3,4 +3,57 @@ $background: white;
 body {
   background: $background;
   font-family: "Helvetica Neue", serif;
+
 }
+
+.container {
+    width: 400px;
+    margin-top: 50px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.input-bar {
+	border: 3px solid #8884d8;
+    font: 28px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+    padding: 3px;
+    width: 300px;
+    height: 45px;
+    float: left;
+}
+
+.add-button {
+	border: 3px solid #8884d8;
+	color: #8884d8;
+	background-color: #FFF;
+    font: 29px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+    margin-left: 5px;
+    width: 95px;
+    height: 45px;
+    padding: -0px 10px;
+}
+
+.delete-button {
+    font: 6px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+    color: white;
+    font-weight: 700;
+    margin-left: 5px;
+    margin-bottom: 6px;
+    padding: 1px;
+    height: 18px;
+    width: 18px;
+    border-radius: 9px;
+    vertical-align: middle;
+    float: right;
+}
+
+.ul-input-bar {
+	padding-left: initial;
+}
+
+.list-input-bar {
+	font-size: 22px;
+	margin-bottom: 20px;
+
+}
+
