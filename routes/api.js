@@ -1,6 +1,9 @@
 var request = require('request')
 var Ticker = require('../models/ticker');
 var Subs = require('../models/subscription');
+var Price = require('../models/price');
+var ticker_id_array;
+var volPercent_array;
 
 function getApi(req, res){
 	var tickers = '';
@@ -25,11 +28,13 @@ function getApi(req, res){
 			console.log("BODY", body)
 			console.log("BODY.length", body.length)
 
-			findOrCreateTicker(input, body, function(result){
+			var googleArray = body.slice(0);
+			var tickerArray = input.tickers.slice(0);
+			ticker_id_array = [];
+			volPercent_array = [];
+			findOrCreateTicker(input, tickerArray, function(result){
 				console.log("RESULTTT", result)
 			})
-			//createOrUpdateSubs()
-
 
 
 			console.log(typeof body)
@@ -38,28 +43,78 @@ function getApi(req, res){
 	})
 }
 
-findOrCreateTicker = (input, body, cb) => {
-	for (var j = 0 ; j < body.length ; j++){
-		Ticker.findOrCreate({symbol : body[j]['t']}, function(err, found, created){
-			if (!created){
-				console.log("symbol already exists.")
+function getAllApi(){
+	var tickers = ''
+	Ticker.find({}, function(err, symbols) {
+    	if (!err) {
+    		symbols.forEach((symbolObj) => {
+    			var text = symbolObj['symbol'] + ",";
+    			tickers += text;
+    		})
+    	}
+    	console.log("tickers", tickers)
+    	var URL = ("http://finance.google.com/finance/info?client=ig&q="+tickers);
+
+    	request.get({
+			url: URL
+		}, function(err, response, body) {
+			if (body.indexOf("httpserver.cc: Response Code 400") >= 0) {
+				console.log("Invalid ticker")
+				return;
+			} else {
+				body = body.substring(3);
+				body = JSON.parse(body);
+				console.log("ALLAPI BODY : ", body)
+				var googleArray = body.slice(0);
+				console.log("SYM", symbols)
+				createPriceEvent(symbols, googleArray)
 			}
-			console.log("created", created)
-			console.log('A new ticker "%s" was inserted', found.symbol);
-			console.log("each volPercent", input.tickers[2]['volPercent'])
-			createSubs(input.user_id, found._id, input.tickers[2]['volPercent'])
-			//found._id
 		})
+    });
+}
+
+createPriceEvent = (tickers, googleArray) => {
+	var tickerObj = tickers.pop();
+	var apiObj = googleArray.pop();
+	if (tickerObj["symbol"].split(':')[1] === apiObj['t']){
+		console.log("symbols match.")
+		Price.create({ticker_id: tickerObj["_id"], price: parseFloat(apiObj["l"])})
+	} else {
+		console.log("CRITICAL ERROR IN FETCHING PRICE FOR getAllApi.")
+	}
+
+	if (tickers.length > 0 || googleArray.length > 0){
+		createPriceEvent(tickers, googleArray);
 	}
 }
 
-createSubs = (user_id, ticker_id, percent_setting) => {
-	Subs.create({user_id: user_id, ticker_id: ticker_id, percent_setting: percent_setting}, function(err, sub){
-		if (err) console.log("Subscription error! ", err);
-		console.log("sub", sub)
+
+findOrCreateTicker = (input, tickerArray, cb) => {
+	var gTicker = tickerArray.pop()
+
+	Ticker.findOrCreate({symbol : gTicker['symbol']}, function(err, found, created){
+		if (!created){
+			console.log("symbol already exists.");
+		}
+		Subs.update({user_id: input.user_id, ticker_id: found._id}, {percent_setting: gTicker['volPercent'], isWatching: true}, {upsert: true, setDefaultsOnInsert: true}, function(err, sub){
+			if (err) console.log("Subscription error! ", err);
+			console.log("sub", sub)
+		})
+
+		ticker_id_array.push(found._id);
+		volPercent_array.push(gTicker['volPercent'])
+
+		if (tickerArray.length > 0){
+			findOrCreateTicker(input, tickerArray, cb)
+		} else {
+			console.log("ARRAYYY", ticker_id_array)
+			console.log("vollll", volPercent_array)
+		}	
 	})
+	
 }
 
 module.exports = {
-	getApi: getApi
+	getApi: getApi,
+	getAllApi: getAllApi
 }

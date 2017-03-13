@@ -38,6 +38,8 @@ if (env.production) {
   });
 }
 
+
+
 var tickerArray;
 
 console.log("Loading tickers. . .");
@@ -49,10 +51,20 @@ fs.readFile(path.join(process.cwd(), '/server/StockSymbolList.csv'), 'utf8', fun
   console.log("tickerArray example :: ", tickerArray[0])
 });
 
-
 mongoose.connect('mongodb://localhost/db_volalert', { config: { autoIndex: true } });
 var auth = require('./routes/auth')
 var api = require('./routes/api')
+
+function startAutoApiCalls(){
+  console.log("Start Universal Clock.")
+  api.getAllApi();
+  
+  setInterval(function(){
+    api.getAllApi();
+  }, 1000*60*6) //1000*60*1 set to one minute
+}
+
+//startAutoApiCalls()
 
 app.get('/watch', api.getApi)
 
@@ -74,6 +86,8 @@ app.get('/checkTicker', function(req, res){
 app.get('/user', auth.getUser);
 app.post('/account_signup', auth.signup);
 app.post('/handle_login', auth.login);
+
+
 
 
 app.get('/*', function(req, res) {

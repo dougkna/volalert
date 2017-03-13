@@ -108,7 +108,7 @@ export default class Ticker extends Component {
         if (result !== "Nothing Found"){
           var validAdd = result.split(",");
           var compName = validAdd[0];
-          var compSymbol = validAdd[1];
+          var compSymbol = validAdd[1].trim();
           for (var i = 0 ; i < this.state.tickers.length ; i++){
             if (this.state.tickers[i].symbol === compSymbol){
               alert("Ticker already exists in the list.");

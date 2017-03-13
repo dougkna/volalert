@@ -68,7 +68,6 @@ function login(req, res){
 }
 
 function getUser(req,res){
-  console.log("QUERY",req.query.token)
   User.findOne({token : req.query.token}, function(err, user){
     console.log("USER:::"+user)
     console.log("REQBODY TOKEN:::"+req.query.token)
