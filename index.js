@@ -3,8 +3,16 @@
 var fs = require('fs');
 var path = require('path');
 
+var mongoose = require('mongoose');
 var express = require('express');
 var app = express();
+var bodyParser = require('body-parser');
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// parse application/json
+app.use(bodyParser.json());
 
 var compress = require('compression');
 var layouts = require('express-ejs-layouts');
@@ -30,6 +38,44 @@ if (env.production) {
   });
 }
 
+var tickerArray;
+
+console.log("Loading tickers. . .");
+fs.readFile(path.join(process.cwd(), '/server/StockSymbolList.csv'), 'utf8', function (err,fullList) {
+  if (err) {
+    return console.log("ERROR in loading ticker list", err);
+  }
+  tickerArray = fullList.split('\n');
+  console.log("tickerArray example :: ", tickerArray[0])
+});
+
+
+mongoose.connect('mongodb://localhost/db_volalert', { config: { autoIndex: true } });
+var auth = require('./routes/auth')
+var api = require('./routes/api')
+
+app.get('/watch', api.getApi)
+
+app.get('/checkTicker', function(req, res){
+  var reqTicker = req.query.input;
+  var verifiedTicker = "Nothing Found"
+  for (var i = 0 ; i < tickerArray.length ; i++){
+    //how to take care of situations like AAPL accepting "aa"?
+    if (tickerArray[i].indexOf(reqTicker.toUpperCase()) >= 0){
+      verifiedTicker = tickerArray[i];
+      console.log("NAME ::", verifiedTicker);
+      res.send(verifiedTicker);
+      return;
+    } 
+  }
+  res.send(verifiedTicker)
+})
+
+app.get('/user', auth.getUser);
+app.post('/account_signup', auth.signup);
+app.post('/handle_login', auth.login);
+
+
 app.get('/*', function(req, res) {
   res.render('index', {
     env: env
@@ -38,7 +84,7 @@ app.get('/*', function(req, res) {
 
 var port = Number(process.env.PORT || 3001);
 app.listen(port, function () {
-  console.log('server running at localhost:3001, go refresh and see magic');
+  console.log('server running at localhost:3001');
 });
 
 if (env.production === false) {

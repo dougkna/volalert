@@ -6,30 +6,60 @@ body {
 
 }
 
-.container {
-    width: 400px;
-    margin-top: 50px;
+.container-master {
+    width: 755px;
     margin-right: auto;
     margin-left: auto;
 }
 
-.input-bar {
+.form-group .body-x {
+	margin-top: 85px;
+}
+
+.container-x .container {
+	width: 100%;
+}
+
+.input-x .search-bar {
 	border: 3px solid #8884d8;
     font: 28px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
     padding: 3px;
-    width: 300px;
+    width: 450px;
+    margin-top: 55px;
     height: 45px;
-    float: left;
 }
 
 .add-button {
 	border: 3px solid #8884d8;
 	color: #8884d8;
 	background-color: #FFF;
-    font: 29px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+    font: 24px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
     margin-left: 5px;
-    width: 95px;
+    width: 150px;
     height: 45px;
+    margin-top: 55px;
+    padding: -0px 10px;
+}
+
+.index-button {
+	border: 3px solid #8884d8;
+	color: #8884d8;
+	background-color: #FFF;
+    font: 24px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+    margin-right: 5px;
+    width: auto;
+    height: 45px;
+    margin-top: 55px;
+    padding: -0px 10px;
+    float: left;
+}
+
+.watch-button {
+	border: 3px solid #8884d8;
+	color: #8884d8;
+	background-color: #FFF;
+    font: 22px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
+    height: 36px;
     padding: -0px 10px;
 }
 
@@ -52,8 +82,18 @@ body {
 }
 
 .list-input-bar {
-	font-size: 22px;
-	margin-bottom: 20px;
-
+	font-size: 16px;
+	margin-bottom: 10px;
+    margin-top: 10px;
 }
 
+.navbar-nav>li>button {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.navbar-nav>li>button {
+    color: #777;
+    border-width: 0;
+    background-image: linear-gradient(to bottom,#fff 0,#f8f8f8 100%);
+}
