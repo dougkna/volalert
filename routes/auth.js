@@ -1,17 +1,10 @@
 var User = require('../models/user');
 var crypto = require('crypto')
 
-var env = {
-  production: process.env.NODE_ENV === 'production'
-};
-
-if (env.production) {
-  Object.assign(env, {
-    assets: JSON.parse(fs.readFileSync(path.join(process.cwd(), 'assets.json')))
-  });
-}
-
 function signup(req, res){
+
+  //prevent duplicate ID's
+
   console.log("SIGNUP PART: "+req.body);
   console.log(`req.body.pw :: ${req.body.password}`)
   var hash = crypto.createHash('md5').update(req.body.password).digest('hex');
@@ -21,9 +14,7 @@ function signup(req, res){
     if (err) {res.send("err")
      return;
     }
-    res.render('index', {
-      env: env
-    });
+    res.status(200).send();
   })
 }
 
@@ -45,12 +36,13 @@ function login(req, res){
         if (user.password == crypto.createHash('md5').update(req.body.password).digest('hex')){
             console.log(user.password)
             console.log(req.body.password)
-            var result = [];
-            result[0] = 'success';
-            result[1] = rand
-            result[2] = user.first_name
-            // var token = new User({ token: result[1] });
-            // token.save();
+            var result = {
+              success: true,
+              token: rand,
+              first_name: user.first_name,
+              user_id: user.id,
+            };
+      
             console.log("user's INFO::: "+JSON.stringify(user))
             res.send(result);
             return;

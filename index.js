@@ -39,7 +39,6 @@ if (env.production) {
 }
 
 
-
 var tickerArray;
 
 console.log("Loading tickers. . .");
@@ -61,10 +60,10 @@ function startAutoApiCalls(){
   
   setInterval(function(){
     api.getAllApi();
-  }, 1000*60*6) //1000*60*1 set to one minute
+  }, 1000*60*1) //1000*60*1 set to one minute
 }
 
-//startAutoApiCalls()
+startAutoApiCalls()
 
 app.get('/watch', api.getApi)
 
@@ -84,6 +83,7 @@ app.get('/checkTicker', function(req, res){
 })
 
 app.get('/user', auth.getUser);
+app.get('/alerts', api.getAlerts);
 app.post('/account_signup', auth.signup);
 app.post('/handle_login', auth.login);
 

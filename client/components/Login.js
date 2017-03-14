@@ -30,6 +30,7 @@ export default class Login extends Component{
 					localStorage.token = res.token;
 					//saveToken(res.token);
 					this.props.getToken(res.token);
+					this.props.getUserId(res.user_id);
 					this.props.getName(res.first_name);
 					console.log(`token is : ${localStorage.token}`)
 					this.props.approveLogin();
@@ -52,12 +53,13 @@ export default class Login extends Component{
 				data: this.state,
 				success: (result) => {
 					console.log("from BACKEND: "+result)
-					if (result[0] ==='success'){
+					if (result.success){
 						console.log("SUCCESS")
 						cb({
 							authenticated: true,
-							token: result[1],
-							first_name: result[2]
+							token: result.token,
+							first_name: result.first_name,
+							user_id: result.user_id,
 						})
 						this.setState({ error : false })
 					} else {

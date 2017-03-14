@@ -14,7 +14,7 @@ export default class Ticker extends Component {
       short_symbol : '',
       volPercent : 1,
       loggedIn : false,
-      user_id : "na"
+      user_id : "XYZ"
     }
   }
 
@@ -23,11 +23,15 @@ export default class Ticker extends Component {
   };
 
   getToken = (token) => {
-    this.setState({ token : token })
+    this.setState({ token })
   };
 
   getName = (first_name) => {
-    this.setState({ first_name : first_name})
+    this.setState({ first_name })
+  };
+
+  getUserId = (user_id) => {
+    this.setState({ user_id })
   };
 
   deleteToken = (e) => {
@@ -166,7 +170,7 @@ export default class Ticker extends Component {
     console.log("TICKERS WATCHING", this.state.watchingTickers.length)
     return (
       <div className='container-master'>
-        <Navigator loggedIn={loggedIn} approveLogin={this.approveLogin} getToken={this.getToken} getName={this.getName} deleteToken={this.deleteToken}/>
+        <Navigator loggedIn={loggedIn} approveLogin={this.approveLogin} getToken={this.getToken} getUserId={this.getUserId} getName={this.getName} deleteToken={this.deleteToken}/>
         
         
         <Form inline className='input-x' onSubmit={this.checkTickerBeforeAdd.bind(this)}>
@@ -198,9 +202,6 @@ export default class Ticker extends Component {
 }
 
 class TickerList extends Component {
-
-
-
   render() {
     return(
         <ul className='ul-input-bar'>

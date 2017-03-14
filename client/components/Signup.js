@@ -4,17 +4,14 @@ import { render } from 'react-dom';
 import { Alert, Form, FormGroup, FormControl, Col, ControlLabel, Checkbox, Button, HelpBlock} from 'react-bootstrap';
 
 export default class Signup extends Component {
-  constructor() {
-    super();
-    this.state = {
-      first_name: '',
-      last_name: '',
-      id: '',
-      slack_id: '',
-      email: '',
-      password: ''
-    }
-  }
+	state = {
+		first_name: '',
+		last_name: '',
+		id: '',
+		slack_id: '',
+		email: '',
+		password: ''
+	};
 
   getValidationStateFirstName() {
     var num = 0

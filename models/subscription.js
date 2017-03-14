@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema
 
 var subscriptionSchema = new Schema({
+	symbol: String,
 	ticker_id : {
 		type: Schema.Types.ObjectId,
 		ref: 'Ticker' 
