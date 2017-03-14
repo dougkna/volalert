@@ -6,9 +6,11 @@ var alertSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Price' 
 	},
+	name : String,
 	user_id : String,
 	symbol : String,
-	volatility : Number
+	volatility : Number,
+	fresh : Boolean
 }, { timestamps: { createdAt: 'created_at' } });
 
 var Alert = mongoose.model("alert", alertSchema)

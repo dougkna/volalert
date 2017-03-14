@@ -7,6 +7,7 @@ var subscriptionSchema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Ticker' 
 	},
+	name : String,
 	user_id : String,
 	percent_setting : Number,
 	isWatching : Boolean

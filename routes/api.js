@@ -66,26 +66,35 @@ function getAllApi(){
 }
 
 createAlertEvent = (subsToAlert, price_id, vol) => {
-	//create alert history
 	var sub = subsToAlert.pop();
 	console.log("ALERTTTT", sub);
-	Alert.create({user_id: sub.user_id, price_id: price_id, symbol: sub.symbol, volatility: vol});
-
-	//(sub['user_id'], sub['symbol'], currentPrice, prevPrice)
+	Alert.create({user_id: sub.user_id, price_id: price_id, symbol: sub.symbol, volatility: vol, fresh: true});
+	// Alert.update({user_id: sub.user_id, price_id: price_id, symbol: sub.symbol, name: sub.name}, {volatility: vol}, {upsert: true, setDefaultsOnInsert: true}, function(err, alertModel) {
+	// 	if (err) console.log("Alert update error! ", err);
+	// 	console.log("ALERT MODEL", alertModel)
+	// });
 
 	if (subsToAlert.length > 0) {
 		createAlertEvent(subsToAlert, price_id, vol);
 	}
 }
 
+getSavedTickers = (req, res) => {
+	var user = req.query.user_id;
+	Subs.find({user_id: user}, function(err, subs){
+		res.send(subs)
+	})
+}
+
 getAlerts = (req, res) => {
 	var user = req.query.user_id;
 	var result = [];
 	var processed = 0;
-	Alert.find({ user_id: user }, function(err, alerts){
+	Alert.find({ user_id: user, fresh: true }, function(err, alerts){
 		alerts.forEach((alert, index, array) => {
 			Price.findOne({ _id: alert.price_id }, function(err, priceModel){
 				result.push({
+					name: alert.name,
 					user_id: alert.user_id,
 					symbol: alert.symbol,
 					volatility: alert.volatility,
@@ -96,6 +105,11 @@ getAlerts = (req, res) => {
 				if (processed === alerts.length){
 					console.log("DONE!!!", result)
 					res.status(200).send(result);
+
+					Alert.update({user_id: user, fresh: true}, {fresh: false}, {upsert: true, multi: true}, function(err, alertModel) {
+						if (err) console.log("Alert update error: fresh => false ", err);
+						console.log("ALERT MODEL after fresh to false", alertModel)
+					})
 				}
 			})
 		});
@@ -114,7 +128,9 @@ createPriceEvent = (tickers, googleArray) => {
 				console.log("SUBS TO BE ALERTED", subsToAlert)
 				console.log("CUR P ", currentPrice)
 				console.log("PREV P ", prevPrice)
-				createAlertEvent(subsToAlert, _id, vol);
+				if (subsToAlert.length) {
+					createAlertEvent(subsToAlert, _id, vol);
+				}
 			})
 		});
 		Price.create({ticker_id: tickerObj._id, price: parseFloat(apiObj['l'])});
@@ -128,8 +144,8 @@ createPriceEvent = (tickers, googleArray) => {
 
 calculatePercentage = (_id, currentPrice, cb) => {
 	var now = new Date();
-	var intervalMinute = 1;
-	var time = now.setMinutes(now.getMinutes() - intervalMinute*2);
+	var intervalSeconds = 60;
+	var time = now.setSeconds(now.getSeconds() - (intervalSeconds + 10));
 	Price.findOne({ticker_id: _id, created_at: {$gte: time}}, function(err, prevEvent) {
 		if (err || !prevEvent){console.log("Could not find previous event."); return;}
 		var prevPrice = prevEvent.price
@@ -151,6 +167,7 @@ findOrCreateTicker = (input, tickerArray) => {
 		}
 		Subs.update({
 			user_id: input.user_id,
+			name : gTicker.name,
 			symbol : gTicker.symbol,
 			ticker_id: found._id
 		}, {
@@ -170,8 +187,22 @@ findOrCreateTicker = (input, tickerArray) => {
 	})
 }
 
+stopWatching = (req, res) => {
+	var user = req.body.input;
+	Subs.update({user_id: user}, {isWatching: false}, {upsert: true, multi: true}, function(err, sub) {
+		if (err) {
+			console.log("Subscription error! ", err);
+		} else {
+			console.log("subs not watching ", sub)
+			res.send("OFF")
+		}
+	})
+}
+
 module.exports = {
 	getApi: getApi,
 	getAllApi: getAllApi,
-	getAlerts: getAlerts
+	getAlerts: getAlerts,
+	stopWatching: stopWatching,
+	getSavedTickers: getSavedTickers,
 }

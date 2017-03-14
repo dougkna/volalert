@@ -84,9 +84,10 @@ app.get('/checkTicker', function(req, res){
 
 app.get('/user', auth.getUser);
 app.get('/alerts', api.getAlerts);
+app.get('/getSavedTickers', api.getSavedTickers);
 app.post('/account_signup', auth.signup);
 app.post('/handle_login', auth.login);
-
+app.post('/stopWatching', api.stopWatching)
 
 
 

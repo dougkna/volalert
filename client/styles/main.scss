@@ -12,6 +12,10 @@ body {
     margin-left: auto;
 }
 
+.container-master .container-x {
+	z-index: 2;	
+}
+
 .form-group .body-x {
 	margin-top: 85px;
 }
@@ -25,7 +29,7 @@ body {
     font: 28px proxima-nova,"Helvetica Neue",Helvetica,Roboto,Arial,sans-serif;
     padding: 3px;
     width: 450px;
-    margin-top: 55px;
+    margin-top: 35px;
     height: 45px;
 }
 
@@ -37,7 +41,7 @@ body {
     margin-left: 5px;
     width: 150px;
     height: 45px;
-    margin-top: 55px;
+    margin-top: 35px;
     padding: -0px 10px;
 }
 
@@ -49,7 +53,7 @@ body {
     margin-right: 5px;
     width: auto;
     height: 45px;
-    margin-top: 55px;
+    margin-top: 35px;
     padding: -0px 10px;
     float: left;
 }
