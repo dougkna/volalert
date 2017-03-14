@@ -55,9 +55,23 @@ export default class Ticker extends Component {
           this.setState({ first_name : result.first_name, user_id : result.id })
           console.log(`current result :: ${JSON.stringify(result)}`)
           console.log(`current user id :: ${result.id}`)
+          this.pollAlerts(result.id);
         }
       });
     }
+  }
+
+  pollAlerts = (user_id) => {
+    this.alertPoll = setInterval(() => {
+      jQuery.ajax({
+        method: "GET",
+        url: '/alerts',
+        data: { user_id },
+        success: (result) => {
+          console.log("SUCCESSSSSS:", result)
+        }
+      });
+    }, 30000);
   }
 
   pickPercent(e, item) {
@@ -66,7 +80,7 @@ export default class Ticker extends Component {
     let tickers = this.state.tickers.slice(0);
     tickers.filter((pickedItem) => {
       if (pickedItem.id === item.id){
-        pickedItem['volPercent'] = parseInt(e.target.value);
+        pickedItem['volPercent'] = parseFloat(e.target.value);
       }
     })
     this.setState({ tickers: tickers });
@@ -210,6 +224,7 @@ class TickerList extends Component {
               <p className='list-input-bar' key={ticker.id}><span>{ticker.symbol}&emsp;</span>{ticker.name}&emsp;&emsp; <span className="text-success">{ticker.price}</span>
               <button type="button" className="close" aria-label="Close" onClick={this.props.handleRemove.bind(this, ticker)}><span aria-hidden="true">&times;</span></button>
               <select class="selectpicker" style={{float:"right", marginRight:"4px"}} onChange={(e) => this.props.pickPercent(e, ticker)}>
+                <option value={0.5}>0.5%</option>
                 <option value={1}>1%</option>
                 <option value={2}>2%</option>
                 <option value={3}>3%</option>

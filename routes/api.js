@@ -88,7 +88,7 @@ getAlerts = (req, res) => {
 				result.push({
 					user_id: alert.user_id,
 					symbol: alert.symbol,
-					volatility: alert.vol,
+					volatility: alert.volatility,
 					price: priceModel.price,
 				})
 				processed++;
@@ -110,8 +110,7 @@ createPriceEvent = (tickers, googleArray) => {
 		calculatePercentage(tickerObj._id, parseFloat(apiObj['l']), function(_id, ticker_id, currentPrice, prevPrice, vol) {
 			
 			//find all users who (1) are watching the ticker, and (2) have met the vol percent trigger.
-			Subs.find({ticker_id: ticker_id, isWatching: true}, function(err, subsToAlert) {
-			//Subs.find({ticker_id: _id, percent_setting:{$lte: vol}, isWatching: true}, function(err, subsToAlert){
+			Subs.find({ticker_id: _id, percent_setting:{$lte: vol}, isWatching: true}, function(err, subsToAlert){
 				console.log("SUBS TO BE ALERTED", subsToAlert)
 				console.log("CUR P ", currentPrice)
 				console.log("PREV P ", prevPrice)
