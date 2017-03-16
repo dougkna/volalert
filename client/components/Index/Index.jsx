@@ -16,7 +16,6 @@ export default class Ticker extends Component {
       loggedIn : false,
       user_id : "XYZ",
       watchSwitch : false,
-      //savedTickers: [],
     }
   }
 

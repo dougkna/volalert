@@ -56,9 +56,7 @@ function getAllApi(){
 			} else {
 				body = body.substring(3);
 				body = JSON.parse(body);
-				console.log("ALLAPI BODY : ", body)
 				var googleArray = body.slice(0);
-				console.log("SYM", symbols);
 				createPriceEvent(symbols, googleArray);
 			}
 		});
@@ -68,7 +66,7 @@ function getAllApi(){
 createAlertEvent = (subsToAlert, price_id, vol) => {
 	var sub = subsToAlert.pop();
 	console.log("ALERTTTT", sub);
-	Alert.create({user_id: sub.user_id, price_id: price_id, symbol: sub.symbol, volatility: vol, fresh: true});
+	Alert.create({user_id: sub.user_id, price_id: price_id, symbol: sub.symbol, name: sub.name, volatility: vol, fresh: true});
 	// Alert.update({user_id: sub.user_id, price_id: price_id, symbol: sub.symbol, name: sub.name}, {volatility: vol}, {upsert: true, setDefaultsOnInsert: true}, function(err, alertModel) {
 	// 	if (err) console.log("Alert update error! ", err);
 	// 	console.log("ALERT MODEL", alertModel)
@@ -92,24 +90,30 @@ getAlerts = (req, res) => {
 	var processed = 0;
 	Alert.find({ user_id: user, fresh: true }, function(err, alerts){
 		alerts.forEach((alert, index, array) => {
+			console.log('alert.price_id', alert.price_id )
 			Price.findOne({ _id: alert.price_id }, function(err, priceModel){
-				result.push({
-					name: alert.name,
-					user_id: alert.user_id,
-					symbol: alert.symbol,
-					volatility: alert.volatility,
-					price: priceModel.price,
-				})
-				processed++;
-
-				if (processed === alerts.length){
-					console.log("DONE!!!", result)
-					res.status(200).send(result);
-
-					Alert.update({user_id: user, fresh: true}, {fresh: false}, {upsert: true, multi: true}, function(err, alertModel) {
-						if (err) console.log("Alert update error: fresh => false ", err);
-						console.log("ALERT MODEL after fresh to false", alertModel)
+				console.log('alerts.length', alerts.length)
+				console.log('priceModel', priceModel)
+				if (priceModel) {
+					result.push({
+						name: alert.name,
+						user_id: alert.user_id,
+						symbol: alert.symbol,
+						volatility: alert.volatility,
+						price: priceModel.price,
 					})
+					processed++;
+					console.log('processed', processed)
+
+					if (processed === alerts.length){
+						console.log("DONE!!!", result)
+						res.status(200).send(result);
+
+						Alert.update({user_id: user, fresh: true}, {fresh: false}, {upsert: true, multi: true}, function(err, alertModel) {
+							if (err) console.log("Alert update error: fresh => false ", err);
+							console.log("ALERT MODEL after fresh to false", alertModel)
+						})
+					}
 				}
 			})
 		});
@@ -121,19 +125,20 @@ createPriceEvent = (tickers, googleArray) => {
 	var apiObj = googleArray.pop();
 	if (tickerObj.symbol.split(':')[1] === apiObj['t']) {
 		console.log("symbols match.")
-		calculatePercentage(tickerObj._id, parseFloat(apiObj['l']), function(_id, ticker_id, currentPrice, prevPrice, vol) {
+		calculatePercentage(tickerObj._id, parseFloat(apiObj['l']), function(ticker_id, price_id, currentPrice, prevPrice, vol) {
 			
 			//find all users who (1) are watching the ticker, and (2) have met the vol percent trigger.
-			Subs.find({ticker_id: _id, percent_setting:{$lte: vol}, isWatching: true}, function(err, subsToAlert){
+			console.log(">>id", ticker_id)
+			Subs.find({ticker_id: ticker_id, percent_setting:{$lte: vol}, isWatching: true}, function(err, subsToAlert){ // percent_setting:{$lte: vol},
 				console.log("SUBS TO BE ALERTED", subsToAlert)
 				console.log("CUR P ", currentPrice)
 				console.log("PREV P ", prevPrice)
 				if (subsToAlert.length) {
-					createAlertEvent(subsToAlert, _id, vol);
+					createAlertEvent(subsToAlert, price_id, vol);
 				}
 			})
 		});
-		Price.create({ticker_id: tickerObj._id, price: parseFloat(apiObj['l'])});
+		Price.create({ticker_id: tickerObj._id, price: parseFloat(apiObj['l_fix']).toFixed(2)*1});
 	} else {
 		console.log("CRITICAL ERROR IN FETCHING PRICE FOR getAllApi.")
 	}
@@ -142,18 +147,18 @@ createPriceEvent = (tickers, googleArray) => {
 	}
 }
 
-calculatePercentage = (_id, currentPrice, cb) => {
+calculatePercentage = (ticker_id, currentPrice, cb) => {
 	var now = new Date();
 	var intervalSeconds = 60;
 	var time = now.setSeconds(now.getSeconds() - (intervalSeconds + 10));
-	Price.findOne({ticker_id: _id, created_at: {$gte: time}}, function(err, prevEvent) {
+	Price.findOne({ticker_id: ticker_id, created_at: {$gte: time}}, function(err, prevEvent) {
 		if (err || !prevEvent){console.log("Could not find previous event."); return;}
 		var prevPrice = prevEvent.price
 		var vol = (Math.abs(currentPrice - prevPrice) / prevPrice).toFixed(4)*100
 		console.log("prevEvent ", prevEvent)
 		console.log("DIFF ", vol)
-		if (Math.abs(vol) >= 0.00){ //keep to 0.01
-			cb(prevEvent._id, _id, currentPrice, prevPrice, vol);
+		if (vol >= 0.50){ //keep to 0.50 for 0.5% for minimum alert trigger
+			cb(ticker_id, prevEvent._id, currentPrice, prevPrice, vol);
 		}	
 	})
 }
