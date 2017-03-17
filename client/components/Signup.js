@@ -98,6 +98,9 @@ export default class Signup extends Component {
         success: () => {
           console.log("return home now")
           window.location.replace("/")
+        },
+        error: () => {
+          alert("User ID already exists! Try again.");
         }
     });
   }

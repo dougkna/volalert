@@ -4,6 +4,11 @@ var crypto = require('crypto')
 function signup(req, res){
 
   //prevent duplicate ID's
+  User.findOne({id: req.body.id}, function(err, duplicate){
+    if (duplicate){
+      res.status(401).send();
+    }
+  })
 
   console.log("SIGNUP PART: "+req.body);
   console.log(`req.body.pw :: ${req.body.password}`)

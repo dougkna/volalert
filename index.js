@@ -47,7 +47,6 @@ fs.readFile(path.join(process.cwd(), '/server/StockSymbolList.csv'), 'utf8', fun
     return console.log("ERROR in loading ticker list", err);
   }
   tickerArray = fullList.split('\n');
-  console.log("tickerArray example :: ", tickerArray[0])
 });
 
 mongoose.connect('mongodb://localhost/db_volalert', { config: { autoIndex: true } });
@@ -60,7 +59,7 @@ function startAutoApiCalls(){
   
   setInterval(function(){
     api.getAllApi();
-  }, 1000*60*1) //1000*60*1 set to one minute
+  }, 1000*60*10) //1000*60*1 set to one minute
 }
 
 startAutoApiCalls()
@@ -87,7 +86,8 @@ app.get('/alerts', api.getAlerts);
 app.get('/getSavedTickers', api.getSavedTickers);
 app.post('/account_signup', auth.signup);
 app.post('/handle_login', auth.login);
-app.post('/stopWatching', api.stopWatching)
+app.post('/stopWatching', api.stopWatching);
+app.post('/deleteSubs', api.deleteSubs)
 
 
 

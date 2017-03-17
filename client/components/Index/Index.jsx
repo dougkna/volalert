@@ -21,7 +21,7 @@ export default class Ticker extends Component {
 
   approveLogin = () => {
     this.setState({ loggedIn: true });
-    this.getSavedTickers();
+    this.getUserInfo();
   };
 
   getToken = (token) => {
@@ -77,7 +77,7 @@ export default class Ticker extends Component {
         success: (results) => {
           console.log("SUCCESSSSSS:", results)
           var array = results.map((result) => {
-           return `${result.name} (Price: ${result.price}) => Price changed by ${result.volatility}% in the last minute!\r`
+           return `${result.name} (Price: ${result.price}) => Price changed by ${result.volatility}%!\r`
           })
           console.log(array)
           alert(array)
@@ -216,6 +216,17 @@ export default class Ticker extends Component {
   }
 
   handleRemove(item){
+    console.log("TICKER TO BE DELETED:", item)
+
+    jQuery.ajax({
+      method: "POST",
+      url: '/deleteSubs',
+      data: {user_id: this.state.user_id, symbol: item.symbol},
+      success: (result) => {
+        console.log("Success in deletion.", result)
+      }
+    })
+
     var newTickers = this.state.tickers.filter((pickedItem) => {
       return pickedItem.id !== item.id
     })
@@ -243,7 +254,7 @@ export default class Ticker extends Component {
           <FormGroup bsSize="small">
             <div className='body-x'>
               {!open && !loggedIn && "Please log in or sign up."} &emsp;
-              {loggedIn && <p> Trader signed in : {this.state.first_name}</p>}
+              {loggedIn && <p> Signed in : {this.state.first_name}</p>}
             </div>
             <Col>
               <DropdownButton 
@@ -306,11 +317,11 @@ class TickerList extends Component {
             </div>
           ))}
           {!this.props.watchSwitch && this.props.tickers.length > 0 && 
-            <Button className="watch-button" block onClick={this.props.startWatching}> Start Watching 
+            <Button className="watch-button" block onClick={this.props.startWatching}> Save & Start Watching
             </Button>
           }
           {this.props.watchSwitch && this.props.tickers.length > 0 && 
-            <Button className="watch-button" block onClick={this.props.stopWatching}> Stop Watching 
+            <Button className="watch-button" block onClick={this.props.stopWatching}> Stop Watching All
             </Button>
           }
         </ul>
