@@ -1,5 +1,6 @@
 var request = require('request')
 var Ticker = require('../models/ticker');
+var findOrCreate = require('mongoose-findorcreate')
 Ticker.plugin(findOrCreate);
 var Subs = require('../models/subscription');
 var Price = require('../models/price');
