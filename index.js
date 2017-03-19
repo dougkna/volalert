@@ -32,10 +32,12 @@ var env = {
   production: process.env.NODE_ENV === 'production'
 };
 
+var mongoUri = 'mongodb://localhost/db_volalert';
 if (env.production) {
   Object.assign(env, {
     assets: JSON.parse(fs.readFileSync(path.join(process.cwd(), 'assets.json')))
   });
+  mongoUri = process.env.MONGODB_URI;
 }
 
 
@@ -49,7 +51,7 @@ fs.readFile(path.join(process.cwd(), '/server/StockSymbolList.csv'), 'utf8', fun
   tickerArray = fullList.split('\n');
 });
 
-mongoose.connect('mongodb://localhost/db_volalert', { config: { autoIndex: true } });
+mongoose.connect(mongoUri, { config: { autoIndex: true } });
 var auth = require('./routes/auth')
 var api = require('./routes/api')
 
