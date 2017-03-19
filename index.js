@@ -61,8 +61,13 @@ function startAutoApiCalls(){
   
   setInterval(function(){
     api.getAllApi();
-  }, 1000*60*10) //1000*60*1 set to one minute
+  }, 1000*60*1) //1000*60*1 set to one minute
 }
+
+setInterval(function(){
+  console.log("Clean up Ticker Model")
+  api.deleteTicker();
+}, 1000*60*10) //1000*60*10 set to ten minutes
 
 startAutoApiCalls()
 
@@ -89,7 +94,8 @@ app.get('/getSavedTickers', api.getSavedTickers);
 app.post('/account_signup', auth.signup);
 app.post('/handle_login', auth.login);
 app.post('/stopWatching', api.stopWatching);
-app.post('/deleteSubs', api.deleteSubs)
+app.post('/deleteSubs', api.deleteSubs);
+app.get('/refreshPrice', api.refreshPrice);
 
 
 

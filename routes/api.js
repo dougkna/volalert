@@ -23,6 +23,7 @@ function getApi(req, res){
 		} else {
 			body = body.substring(3);
 			body = JSON.parse(body);
+			console.log("Body: ", body)
 
 			var googleArray = body.slice(0);
 			var tickerArray = input.tickers.slice(0);
@@ -42,13 +43,14 @@ function getAllApi(){
   			tickers += text;
   		})
   	}
+  	console.log("tickers, ", tickers)
   	var URL = ("http://finance.google.com/finance/info?client=ig&q="+tickers);
 
     request.get({
 			url: URL
 		}, function(err, response, body) {
 			if (body.indexOf("httpserver.cc: Response Code 400") >= 0) {
-				console.log("Invalid ticker")
+				console.log("Invalid ticker for getAllApi")
 				return;
 			} else {
 				body = body.substring(3);
@@ -83,14 +85,36 @@ getSavedTickers = (req, res) => {
 	})
 }
 
+refreshPrice = (req, res) => {
+	var user = req.query.user_id;
+	var result = [];
+	var processed = 0;
+
+	Subs.find({ user_id: user, isWatching: true }, function(err, subs) {
+		subs.forEach((sub) => {
+			//findOne will be much faster here
+			Price.find({ticker_id: sub.ticker_id}, function(err, priceModel) {
+				if (priceModel) {
+					result.push({ symbol: sub.symbol, price: priceModel[0].price });
+				}
+				processed++;
+
+				if (processed === subs.length){
+					res.status(200).send(result);
+				}
+			}).sort({$natural:-1}).limit(1);
+		})
+	})
+}
+
 getAlerts = (req, res) => {
 	var user = req.query.user_id;
 	var result = [];
 	var processed = 0;
-	Alert.find({ user_id: user, fresh: true }, function(err, alerts){
+	Alert.find({ user_id: user, fresh: true }, function(err, alerts) {
 		alerts.forEach((alert, index, array) => {
 			console.log('alert.price_id', alert.price_id )
-			Price.findOne({ _id: alert.price_id }, function(err, priceModel){
+			Price.findOne({ _id: alert.price_id }, function(err, priceModel) {
 				console.log('priceModel', priceModel)
 				if (priceModel) {
 					result.push({
@@ -122,21 +146,18 @@ createPriceEvent = (tickers, googleArray) => {
 	var tickerObj = tickers.pop();
 	var apiObj = googleArray.pop();
 	if (tickerObj.symbol.split(':')[1] === apiObj['t']) {
-		calculatePercentage(tickerObj._id, parseFloat(apiObj['l_fix']).toFixed(2), 
-		function(ticker_id, price_id, currentPrice, prevPrice, vol) {
-			
+		calculatePercentage(tickerObj._id, apiObj['l_fix'], function(ticker_id, price_id, vol) {		
 			//find all users who (1) are watching the ticker, and (2) have met the vol percent trigger.
 			Subs.find({ticker_id: ticker_id, percent_setting:{$lte: vol}, isWatching: true}, 
 			function(err, subsToAlert){ // percent_setting:{$lte: vol},
 				console.log("SUBS TO BE ALERTED", subsToAlert)
-				console.log("CUR P ", currentPrice)
-				console.log("PREV P ", prevPrice)
 				if (subsToAlert.length) {
 					createAlertEvent(subsToAlert, price_id, vol);
 				}
 			})
 		});
-		Price.create({ticker_id: tickerObj._id, price: parseFloat(apiObj['l_fix']).toFixed(2)*1});
+		Price.create({ticker_id: tickerObj._id, price: apiObj['l_fix']});
+		console.log("p created :", tickerObj._id + " " + apiObj['l_fix'])
 	} else {
 		console.log("CRITICAL ERROR IN FETCHING PRICE FOR getAllApi.")
 	}
@@ -148,14 +169,19 @@ createPriceEvent = (tickers, googleArray) => {
 calculatePercentage = (ticker_id, currentPrice, cb) => {
 	var now = new Date();
 	var intervalSeconds = 60;
-	var time = now.setSeconds(now.getSeconds() - (intervalSeconds + 10));
+	var time = now.setSeconds(now.getSeconds() - (intervalSeconds));
 	Price.findOne({ticker_id: ticker_id, created_at: {$gte: time}}, function(err, prevEvent) {
 		if (err || !prevEvent){console.log("Could not find previous event."); return;}
-		var prevPrice = prevEvent.price
-		var vol = (Math.abs(currentPrice - prevPrice) / prevPrice).toFixed(4)*100
+		console.log("PREVEVENT!!!! : ", prevEvent)
+		console.log("PREVVVPRICEEE", prevEvent.price)
+		var prevPrice = parseFloat(prevEvent.price).toFixed(4)*1;
+		var currPrice = parseFloat(currentPrice).toFixed(4)*1;
+		console.log("prev P ", prevPrice)
+		console.log("curr P ", currPrice)
+		var vol = (Math.abs(currPrice - prevPrice) / prevPrice).toFixed(4)*100
 		console.log("DIFF ", vol)
 		if (vol >= 0.50){ //keep to 0.50 for 0.5% for minimum alert trigger
-			cb(ticker_id, prevEvent._id, currentPrice, prevPrice, vol);
+			cb(ticker_id, prevEvent._id, vol);
 		}	
 	})
 }
@@ -208,6 +234,20 @@ deleteSubs = (req, res) => {
 	res.send("Deleted")
 }
 
+//Clean up Ticker model periodically in order to account for any deleted tickers in all Subscription
+deleteTicker = () => {
+	Ticker.find({}, function(err, tickers) {
+		tickers.forEach((ticker) => {
+			Subs.find({symbol: ticker.symbol}, function(err, sub){
+				if (sub.length === 0) {
+					console.log("following is no longer subscribed from anyone : ", ticker.symbol)
+					Ticker.findOne({symbol: ticker.symbol}).remove().exec();
+				}
+			})
+		})
+	})
+}
+
 module.exports = {
 	getApi: getApi,
 	getAllApi: getAllApi,
@@ -215,4 +255,6 @@ module.exports = {
 	stopWatching: stopWatching,
 	getSavedTickers: getSavedTickers,
 	deleteSubs: deleteSubs,
+	refreshPrice: refreshPrice,
+	deleteTicker: deleteTicker,
 }

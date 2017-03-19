@@ -3,7 +3,7 @@ var Schema = mongoose.Schema
 
 var priceSchema = new Schema({
 	ticker_id : String,
-	price : Number
+	price : String,
 }, { timestamps: { createdAt: 'created_at' } });
 
 var Price = mongoose.model("price", priceSchema)

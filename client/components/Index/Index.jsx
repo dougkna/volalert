@@ -14,7 +14,7 @@ export default class Ticker extends Component {
       short_symbol : '',
       volPercent : 0.5,
       loggedIn : false,
-      user_id : "XYZ",
+      user_id : '',
       watchSwitch : false,
     }
   }
@@ -60,7 +60,6 @@ export default class Ticker extends Component {
       data: { token : localStorage.token },
       success: (result) => {
         this.setState({ first_name : result.first_name, user_id : result.id })
-        console.log(`current result :: ${JSON.stringify(result)}`)
         console.log(`current user id :: ${result.id}`)
         this.pollAlerts(result.id);
         this.getSavedTickers(result.id);
@@ -75,7 +74,6 @@ export default class Ticker extends Component {
         url: '/alerts',
         data: { user_id },
         success: (results) => {
-          console.log("SUCCESSSSSS:", results)
           var array = results.map((result) => {
            return `${result.name} (Price: ${result.price}) => Price changed by ${result.volatility}%!\r`
           })
@@ -113,7 +111,8 @@ export default class Ticker extends Component {
   }
 
   componentWillUnmount(){
-    clearInterval(this.alertPoll)
+    clearInterval(this.alertPoll);
+    clearInterval(this.priceRef);
   }
 
   pickPercent(e, item) {
@@ -126,7 +125,6 @@ export default class Ticker extends Component {
       }
     })
     this.setState({ tickers: tickers });
-    console.log('CHANGED STATE AFTER PERC ', this.state)
   }
 
   stopWatching(e) {
@@ -136,14 +134,17 @@ export default class Ticker extends Component {
       url: '/stopWatching',
       data: { input: this.state.user_id },
       success: (result) => {
-        console.log("STOP WATCHING :", result)
         this.setState({watchSwitch: !this.state.watchSwitch})
       }
     });
   }
 
   startWatching(e) {
-    console.log("TICKERRRR", this.state.tickers)
+    if (!this.state.loggedIn) {
+      alert("Please sign in first.");
+      return;
+    }
+
     e.preventDefault();
     jQuery.ajax({
       method: "GET",
@@ -154,7 +155,7 @@ export default class Ticker extends Component {
         let tickers = this.state.tickers.slice(0);
         for (var i = 0 ; i < Object.keys(result).length ; i++){
           if (tickers[i]['short_symbol'] === this.state.watchingTickers[i]['t']){
-            tickers[i]['price'] = this.state.watchingTickers[i]['l']
+            tickers[i]['price'] = this.state.watchingTickers[i]['l_fix']
           } else {
             console.log("Something went wrong when retrieving price.")
             tickers[i]['price'] = 'ERROR'
@@ -164,37 +165,60 @@ export default class Ticker extends Component {
         console.log("CHANGED TICKER STATE ", tickers)
       }
     })
+    this.refreshPrice();
+  }
+
+  refreshPrice = () => {
+    this.priceRef = setInterval(() => {
+      jQuery.ajax({
+        method: "GET",
+        url: '/refreshPrice',
+        data: { user_id: this.state.user_id },
+        success: (arr) => {
+          let tickers = this.state.tickers.slice(0);
+          for (var i = 0 ; i < tickers.length ; i++){
+            for (var j = 0 ; j < arr.length; j++){
+              if (tickers[i]['symbol'] === arr[j]['symbol']){
+                tickers[i]['price'] = arr[j]['price'];
+              }
+            }
+          }
+          this.setState({ tickers: tickers })
+        }
+      });
+    }, 30000);
   }
 
   checkTickerBeforeAdd(e){
     e.preventDefault();
-    jQuery.ajax({
-      method: "GET",
-      url: '/checkTicker',
-      data: {input : `${this.state.index}:${this.state.text}`},
-      success: (result) => {
-        console.log("RESULTTT ::: ", result);
-        if (result !== "Nothing Found"){
-          var validAdd = result.split(",");
-          var compName = validAdd[0];
-          var compSymbol = validAdd[1].trim();
-          for (var i = 0 ; i < this.state.tickers.length ; i++){
-            if (this.state.tickers[i].symbol === compSymbol){
-              alert("Ticker already exists in the list.");
-              return;
+    if (this.state.tickers.length <= 4) {
+      jQuery.ajax({
+        method: "GET",
+        url: '/checkTicker',
+        data: {input : `${this.state.index}:${this.state.text}`},
+        success: (result) => {
+          if (result !== "Nothing Found"){
+            var validAdd = result.split(",");
+            var compName = validAdd[0];
+            var compSymbol = validAdd[1].trim();
+            for (var i = 0 ; i < this.state.tickers.length ; i++){
+              if (this.state.tickers[i].symbol === compSymbol){
+                alert("Ticker already exists in the list.");
+                return;
+              }
             }
+            this.handleTickerSubmit(compName, compSymbol)
+          } else {
+            alert("Ticker does not exist.")
           }
-          console.log("compSymbol", compSymbol)
-          this.handleTickerSubmit(compName, compSymbol)
-        } else {
-          alert("Ticker does not exist.")
         }
-      }
-    })
+      })
+    } else {
+      alert("Max 5 tickers are permitted.")
+    }
   }
 
   handleTickerSubmit(name, symbol){
-    console.log("SUBMIT ", this.state)
     var short_symbol = symbol.split(':')[1].toUpperCase().toString().trim();
     var newTicker = {
       //text: `${this.state.index}:${this.state.text}`,
@@ -216,8 +240,6 @@ export default class Ticker extends Component {
   }
 
   handleRemove(item){
-    console.log("TICKER TO BE DELETED:", item)
-
     jQuery.ajax({
       method: "POST",
       url: '/deleteSubs',
@@ -243,7 +265,6 @@ export default class Ticker extends Component {
 
   render() {
     const { loggedIn, open } = this.state;
-    console.log("TICKERS WATCHING", this.state.watchingTickers.length)
     return (
       <div className='container-master'>
         <Navigator loggedIn={loggedIn} approveLogin={this.approveLogin} getToken={this.getToken}
@@ -296,7 +317,7 @@ class TickerList extends Component {
             <div>
               <p className='list-input-bar' key={ticker.id}>
                 <span>{ticker.symbol}&emsp;</span>{ticker.name}&emsp;&emsp;
-                <span className="text-success">{ticker.price}</span>
+                <span>{ticker.price}</span>
               <button type="button" className="close" aria-label="Close" 
                 onClick={this.props.handleRemove.bind(this, ticker)}
               >
