@@ -69,7 +69,12 @@ setInterval(function(){
   api.deleteTicker();
 }, 1000*60*10) //1000*60*10 set to ten minutes
 
-startAutoApiCalls()
+setInterval(function(){
+  console.log("Delete old prices")
+  api.deleteOldPrice();
+}, 1000*60*60*24*7) //one week
+
+startAutoApiCalls();
 
 app.get('/watch', api.getApi)
 

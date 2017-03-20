@@ -169,7 +169,7 @@ createPriceEvent = (tickers, googleArray) => {
 calculatePercentage = (ticker_id, currentPrice, cb) => {
 	var now = new Date();
 	var intervalSeconds = 60;
-	var time = now.setSeconds(now.getSeconds() - (intervalSeconds));
+	var time = now.setSeconds(now.getSeconds() - (intervalSeconds + 5));
 	Price.findOne({ticker_id: ticker_id, created_at: {$gte: time}}, function(err, prevEvent) {
 		if (err || !prevEvent){console.log("Could not find previous event."); return;}
 		console.log("PREVEVENT!!!! : ", prevEvent)
@@ -248,6 +248,15 @@ deleteTicker = () => {
 	})
 }
 
+//Delete old Price documents
+deleteOldPrice = () => {
+	var now = new Date();
+	var intervalHours = 24*7;
+	var time = now.setHours(now.getHours() - intervalHours);
+
+	Price.find({created_at: {$lte: time}}).remove().exec();
+}
+
 module.exports = {
 	getApi: getApi,
 	getAllApi: getAllApi,
@@ -257,4 +266,5 @@ module.exports = {
 	deleteSubs: deleteSubs,
 	refreshPrice: refreshPrice,
 	deleteTicker: deleteTicker,
+	deleteOldPrice: deleteOldPrice,
 }
