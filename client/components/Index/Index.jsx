@@ -40,7 +40,7 @@ export default class Ticker extends Component {
     if (e.target.name == 'signoff'){
       delete localStorage.token;
       console.log("DELETING TOKEN")
-      this.setState({ loggedIn : false});
+      this.setState({ loggedIn : false, watchSwitch : false});
       this.setState({ tickers : [] })
     }
   }
