@@ -61,18 +61,18 @@ function startAutoApiCalls(){
   
   setInterval(function(){
     api.getAllApi();
-  }, 1000*60*1) //1000*60*1 set to one minute
+  }, 1000*60*1) //1000*60*1 set to one minute (Stock price refresh interval)
 }
 
 setInterval(function(){
   console.log("Clean up Ticker Model")
   api.deleteTicker();
-}, 1000*60*10) //1000*60*10 set to ten minutes
+}, 1000*60*10) //1000*60*10 set to ten minutes (Ticker Model optimization interval)
 
 setInterval(function(){
   console.log("Delete old prices")
   api.deleteOldPrice();
-}, 1000*60*60*24*7) //one week
+}, 1000*60*60*24*2) //one week (Will store only one week's worth of historical prices)
 
 startAutoApiCalls();
 

@@ -251,7 +251,7 @@ deleteTicker = () => {
 //Delete old Price documents
 deleteOldPrice = () => {
 	var now = new Date();
-	var intervalHours = 24*7;
+	var intervalHours = 24*2;
 	var time = now.setHours(now.getHours() - intervalHours);
 
 	Price.find({created_at: {$lte: time}}).remove().exec();
