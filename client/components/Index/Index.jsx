@@ -318,6 +318,7 @@ class TickerList extends Component {
               <p className='list-input-bar' key={ticker.id}>
                 <span>{ticker.symbol}&emsp;</span>{ticker.name}&emsp;&emsp;
                 <span>{ticker.price}</span>
+                {this.props.watchSwitch && <span className='loading'></span>}
               <button type="button" className="close" aria-label="Close" 
                 onClick={this.props.handleRemove.bind(this, ticker)}
               >

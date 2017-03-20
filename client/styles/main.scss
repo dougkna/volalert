@@ -103,3 +103,32 @@ body {
     border-width: 0;
     background-image: linear-gradient(to bottom,#fff 0,#f8f8f8 100%);
 }
+
+
+
+
+.loading {
+  font-size: 16px;
+}
+
+.loading:after {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+  -webkit-animation: ellipsis steps(1,end) 800ms infinite;      
+  animation: ellipsis steps(8,end) 1000ms infinite;
+  content: "\2015"; /* ascii code for the ellipsis character */
+  width: 0px;
+}
+
+@keyframes ellipsis {
+  to {
+    width: 1.25em;    
+  }
+}
+
+@-webkit-keyframes ellipsis {
+  to {
+    width: 1.25em;    
+  }
+}
