@@ -5,6 +5,19 @@ var Price = require('../models/price');
 var Alert = require('../models/alert');
 
 
+function test(msg){
+	request({
+		url: 'https://hooks.slack.com/services/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',
+		method: 'POST',
+		body: { text: msg },
+    json: true
+	}, function(err, httpResponse, body){
+		console.log("request.post!", body)
+		console.log("request.post!http", httpResponse)
+	});
+}
+
+
 function getApi(req, res){
 	var tickers = '';
 	var input = req.query.input;
@@ -267,4 +280,5 @@ module.exports = {
 	refreshPrice: refreshPrice,
 	deleteTicker: deleteTicker,
 	deleteOldPrice: deleteOldPrice,
+	test: test,
 }

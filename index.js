@@ -64,6 +64,9 @@ function startAutoApiCalls(){
   }, 1000*60*1) //1000*60*1 set to one minute (Stock price refresh interval)
 }
 
+
+
+
 setInterval(function(){
   console.log("Clean up Ticker Model")
   api.deleteTicker();
@@ -77,6 +80,8 @@ setInterval(function(){
 startAutoApiCalls();
 
 app.get('/watch', api.getApi)
+var sup = 'asdfg';
+api.test(sup);
 
 app.get('/checkTicker', function(req, res){
   var reqTicker = req.query.input;
