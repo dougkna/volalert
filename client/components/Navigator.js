@@ -31,9 +31,9 @@ export default class Navigation extends Component {
 			        	{!this.props.loggedIn && <button onClick ={ () => this.setState({open : !this.state.open })}> Login </button>}
 			        	{!this.props.loggedIn && 
 			        	<Collapse in={this.state.open}>
-			            	<div><Login approveLogin={this.props.approveLogin} getToken={this.props.getToken} getUserId={this.props.getUserId} getName={this.props.getName}/></div>
-			          	</Collapse>
-			          	}
+		            	<div><Login approveLogin={this.props.approveLogin} getToken={this.props.getToken} getUserId={this.props.getUserId} getName={this.props.getName}/></div>
+		          	</Collapse>
+		          	}
 			        </li>
 			        {this.props.loggedIn && <li><button name="signoff" onClick={this.props.deleteToken}>Sign Off</button></li>}
 

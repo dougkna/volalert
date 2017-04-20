@@ -80,7 +80,7 @@ setInterval(function(){
 startAutoApiCalls();
 
 app.get('/watch', api.getApi)
-var sup = 'asdfg';
+var sup = 'Someone is visiting Volalert.';
 api.test(sup);
 
 app.get('/checkTicker', function(req, res){
@@ -106,6 +106,12 @@ app.post('/handle_login', auth.login);
 app.post('/stopWatching', api.stopWatching);
 app.post('/deleteSubs', api.deleteSubs);
 app.get('/refreshPrice', api.refreshPrice);
+
+//temp
+app.post('/test', function(req,res) {
+  console.log("test was successful. ", req)
+  res.status(200).send('result...');
+})
 
 
 
