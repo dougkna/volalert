@@ -7,6 +7,6 @@ var tickerSchema = new Schema({
 }, { timestamps: { createdAt: 'created_at' } });
 
 tickerSchema.plugin(findOrCreate);
-var Ticker = mongoose.model("ticker", tickerSchema)
+var Ticker = mongoose.model("ticker", tickerSchema);
 
 module.exports = Ticker

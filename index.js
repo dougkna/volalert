@@ -55,11 +55,11 @@ mongoose.connect(mongoUri, { config: { autoIndex: true } });
 var auth = require('./routes/auth')
 var api = require('./routes/api')
 
-function startAutoApiCalls(){
-  console.log("Start Universal Clock.")
+function startAutoApiCalls() {
+  console.log("Start Universal Clock.");
   api.getAllApi();
   
-  setInterval(function(){
+  setInterval(function() {
     api.getAllApi();
   }, 1000*60*1) //1000*60*1 set to one minute (Stock price refresh interval)
 }
@@ -67,35 +67,32 @@ function startAutoApiCalls(){
 
 
 
-setInterval(function(){
-  console.log("Clean up Ticker Model")
+setInterval(function() {
   api.deleteTicker();
 }, 1000*60*10) //1000*60*10 set to ten minutes (Ticker Model optimization interval)
 
-setInterval(function(){
-  console.log("Delete old prices")
+setInterval(function() {
   api.deleteOldPrice();
 }, 1000*60*60*24*2) //one week (Will store only one week's worth of historical prices)
 
 startAutoApiCalls();
 
-app.get('/watch', api.getApi)
+app.get('/watch', api.getApi);
 var sup = 'Someone is visiting Volalert.';
 api.test(sup);
 
-app.get('/checkTicker', function(req, res){
+app.get('/checkTicker', function(req, res) {
   var reqTicker = req.query.input;
   var verifiedTicker = "Nothing Found"
-  for (var i = 0 ; i < tickerArray.length ; i++){
+  for (var i = 0 ; i < tickerArray.length ; i++) {
     //how to take care of situations like AAPL accepting "aa"?
-    if (tickerArray[i].indexOf(reqTicker.toUpperCase()) >= 0){
+    if (tickerArray[i].indexOf(reqTicker.toUpperCase()) >= 0) {
       verifiedTicker = tickerArray[i];
-      console.log("NAME ::", verifiedTicker);
       res.send(verifiedTicker);
       return;
     } 
   }
-  res.send(verifiedTicker)
+  res.send(verifiedTicker);
 })
 
 app.get('/user', auth.getUser);
@@ -109,7 +106,6 @@ app.get('/refreshPrice', api.refreshPrice);
 
 //temp
 app.post('/test', function(req,res) {
-  console.log("test was successful. ", req)
   res.status(200).send('result...');
 })
 

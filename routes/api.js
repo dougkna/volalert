@@ -5,23 +5,22 @@ var Price = require('../models/price');
 var Alert = require('../models/alert');
 
 
-function test(msg){
+function test(msg) {
 	request({
 		url: 'https://hooks.slack.com/services/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',
 		method: 'POST',
 		body: { text: msg },
     json: true
-	}, function(err, httpResponse, body){
-		console.log("request.post!", body)
-		console.log("request.post!http", httpResponse)
+	}, function(err, httpResponse, body) {
+		console.log("request.post: ", body);
 	});
 }
 
 
-function getApi(req, res){
+function getApi(req, res) {
 	var tickers = '';
 	var input = req.query.input;
-	for (var i = 0 ; i < input.tickers.length ; i++){
+	for (var i = 0 ; i < input.tickers.length ; i++) {
 		var text = input.tickers[i]['symbol'] + ",";
 		tickers += text;
 	};
@@ -31,39 +30,37 @@ function getApi(req, res){
 		url: URL
 	}, function(err, response, body) {
 		if (body.indexOf("httpserver.cc: Response Code 400") >= 0) {
-			console.log("Invalid ticker")
+			console.log("Invalid ticker");
 			return;
 		} else {
 			body = body.substring(3);
 			body = JSON.parse(body);
-			console.log("Body: ", body)
 
 			var googleArray = body.slice(0);
 			var tickerArray = input.tickers.slice(0);
 			findOrCreateTicker(input, tickerArray);
 
-			res.send(body)
+			res.send(body);
 		}
 	})
 }
 
-function getAllApi(){
+function getAllApi() {
 	var tickers = ''
 	Ticker.find({}, function(err, symbols) {
   	if (!err) {
   		symbols.forEach((symbolObj) => {
   			var text = symbolObj.symbol + ",";
   			tickers += text;
-  		})
+  		});
   	}
-  	console.log("tickers, ", tickers)
   	var URL = ("http://finance.google.com/finance/info?client=ig&q="+tickers);
 
     request.get({
 			url: URL
 		}, function(err, response, body) {
 			if (body.indexOf("httpserver.cc: Response Code 400") >= 0) {
-				console.log("Invalid ticker for getAllApi")
+				console.log("Invalid ticker for getAllApi");
 				return;
 			} else {
 				body = body.substring(3);
@@ -94,7 +91,7 @@ createAlertEvent = (subsToAlert, price_id, vol) => {
 getSavedTickers = (req, res) => {
 	var user = req.query.user_id;
 	Subs.find({user_id: user}, function(err, subs) {
-		res.send(subs)
+		res.send(subs);
 	})
 }
 
@@ -112,12 +109,12 @@ refreshPrice = (req, res) => {
 				}
 				processed++;
 
-				if (processed === subs.length){
+				if (processed === subs.length) {
 					res.status(200).send(result);
 				}
 			}).sort({$natural:-1}).limit(1);
-		})
-	})
+		});
+	});
 }
 
 getAlerts = (req, res) => {
@@ -126,9 +123,7 @@ getAlerts = (req, res) => {
 	var processed = 0;
 	Alert.find({ user_id: user, fresh: true }, function(err, alerts) {
 		alerts.forEach((alert, index, array) => {
-			console.log('alert.price_id', alert.price_id )
 			Price.findOne({ _id: alert.price_id }, function(err, priceModel) {
-				console.log('priceModel', priceModel)
 				if (priceModel) {
 					result.push({
 						name: alert.name,
@@ -136,21 +131,19 @@ getAlerts = (req, res) => {
 						symbol: alert.symbol,
 						volatility: alert.volatility,
 						price: priceModel.price,
-					})
+					});
 					processed++;
 
-					if (processed === alerts.length){
-						console.log("DONE!!!", result)
+					if (processed === alerts.length) {
 						res.status(200).send(result);
 
 						Alert.update({user_id: user, fresh: true}, {fresh: false}, {upsert: true, multi: true}, 
 						function(err, alertModel) {
 							if (err) console.log("Alert update error: fresh => false ", err);
-							console.log("ALERT MODEL after fresh to false", alertModel)
 						})
 					}
 				}
-			})
+			});
 		});
 	});
 }
@@ -162,17 +155,15 @@ createPriceEvent = (tickers, googleArray) => {
 		calculatePercentage(tickerObj._id, apiObj['l_fix'], function(ticker_id, price_id, vol) {		
 			//find all users who (1) are watching the ticker, and (2) have met the vol percent trigger.
 			Subs.find({ticker_id: ticker_id, percent_setting:{$lte: vol}, isWatching: true}, 
-			function(err, subsToAlert){ // percent_setting:{$lte: vol},
-				console.log("SUBS TO BE ALERTED", subsToAlert)
+			function(err, subsToAlert) { // percent_setting:{$lte: vol},
 				if (subsToAlert.length) {
 					createAlertEvent(subsToAlert, price_id, vol);
 				}
-			})
+			});
 		});
 		Price.create({ticker_id: tickerObj._id, price: apiObj['l_fix']});
-		console.log("p created :", tickerObj._id + " " + apiObj['l_fix'])
 	} else {
-		console.log("CRITICAL ERROR IN FETCHING PRICE FOR getAllApi.")
+		console.log("CRITICAL ERROR IN FETCHING PRICE FOR getAllApi.");
 	}
 	if (tickers.length > 0 || googleArray.length > 0) {
 		createPriceEvent(tickers, googleArray);
@@ -184,19 +175,14 @@ calculatePercentage = (ticker_id, currentPrice, cb) => {
 	var intervalSeconds = 60;
 	var time = now.setSeconds(now.getSeconds() - (intervalSeconds + 5));
 	Price.findOne({ticker_id: ticker_id, created_at: {$gte: time}}, function(err, prevEvent) {
-		if (err || !prevEvent){console.log("Could not find previous event."); return;}
-		console.log("PREVEVENT!!!! : ", prevEvent)
-		console.log("PREVVVPRICEEE", prevEvent.price)
+		if (err || !prevEvent) return;
 		var prevPrice = parseFloat(prevEvent.price).toFixed(4)*1;
 		var currPrice = parseFloat(currentPrice).toFixed(4)*1;
-		console.log("prev P ", prevPrice)
-		console.log("curr P ", currPrice)
-		var vol = (Math.abs(currPrice - prevPrice) / prevPrice).toFixed(4)*100
-		console.log("DIFF ", vol)
-		if (vol >= 0.50){ //keep to 0.50 for 0.5% for minimum alert trigger
+		var vol = (Math.abs(currPrice - prevPrice) / prevPrice).toFixed(4)*100;
+		if (vol >= 0.50) { //keep to 0.50 for 0.5% for minimum alert trigger
 			cb(ticker_id, prevEvent._id, vol);
 		}	
-	})
+	});
 }
 
 findOrCreateTicker = (input, tickerArray) => {
@@ -219,13 +205,12 @@ findOrCreateTicker = (input, tickerArray) => {
 			setDefaultsOnInsert: true
 		}, function(err, sub) {
 			if (err) console.log("Subscription error! ", err);
-			console.log("sub", sub)
 		});
 
 		if (tickerArray.length > 0) {
 			findOrCreateTicker(input, tickerArray);
 		} 	
-	})
+	});
 }
 
 stopWatching = (req, res) => {
@@ -234,31 +219,29 @@ stopWatching = (req, res) => {
 		if (err) {
 			console.log("Subscription error! ", err);
 		} else {
-			console.log("subs not watching ", sub)
-			res.send("OFF")
+			res.send("OFF");
 		}
-	})
+	});
 }
 
 deleteSubs = (req, res) => {
 	var user_id = req.body.user_id;
 	var symbol = req.body.symbol;
 	Subs.find({user_id: user_id, symbol: symbol}).remove().exec();
-	res.send("Deleted")
+	res.send("Deleted");
 }
 
 //Clean up Ticker model periodically in order to account for any deleted tickers in all Subscription
 deleteTicker = () => {
 	Ticker.find({}, function(err, tickers) {
 		tickers.forEach((ticker) => {
-			Subs.find({symbol: ticker.symbol}, function(err, sub){
+			Subs.find({symbol: ticker.symbol}, function(err, sub) {
 				if (sub.length === 0) {
-					console.log("following is no longer subscribed from anyone : ", ticker.symbol)
 					Ticker.findOne({symbol: ticker.symbol}).remove().exec();
 				}
-			})
-		})
-	})
+			});
+		});
+	});
 }
 
 //Delete old Price documents

@@ -17,15 +17,15 @@ export default class Signup extends Component {
     var num = 0
     const length = this.state.first_name.length;
     const special = "0123456789?`~!@#$%^&*()-_=+;:''[]{}"
-    for (let i = 0; i < special.length; i++){
-      if (this.state.first_name.indexOf(special[i]) < 0 && length > 1){
+    for (let i = 0; i < special.length; i++) {
+      if (this.state.first_name.indexOf(special[i]) < 0 && length > 1) {
         num++;
       } 
-      else if (this.state.first_name.indexOf(special[i]) >= 0){
+      else if (this.state.first_name.indexOf(special[i]) >= 0) {
         return 'error';
       }
     }
-    if (num == special.length){
+    if (num == special.length) {
       return 'success';
     } 
   }
@@ -34,25 +34,25 @@ export default class Signup extends Component {
     var num = 0
     const length = this.state.last_name.length;
     const special = "0123456789?`~!@#$%^&*()-_=+;:''[]{}"
-    for (let i = 0; i < special.length; i++){
-      if (this.state.last_name.indexOf(special[i]) < 0 && length > 1){
+    for (let i = 0; i < special.length; i++) {
+      if (this.state.last_name.indexOf(special[i]) < 0 && length > 1) {
         num++;
       } 
-      else if (this.state.last_name.indexOf(special[i]) >= 0){
+      else if (this.state.last_name.indexOf(special[i]) >= 0) {
         return 'error';
       }
     }
-    if (num == special.length){
+    if (num == special.length) {
       return 'success';
     } 
   }
 
   getValidationStateId() {
   	const length = this.state.id.length;
-  	if (length === 0) return 'error'
+  	if (length === 0) return 'error';
 
     var id = this.state.id;
-    var requirement = new RegExp('[A-Z,~!@#$%^&*()+=\\\\/"\'?<>`}{\\][\\|]')
+    var requirement = new RegExp('[A-Z,~!@#$%^&*()+=\\\\/"\'?<>`}{\\][\\|]');
     if (!requirement.test(id)) return 'success';
     else return 'error';  	
   }
@@ -60,20 +60,20 @@ export default class Signup extends Component {
   //SLACK Usernames must be all lowercase, with no spaces. They can only contain letters, numbers, periods, hyphens, and underscores.
   getValidationStateSlack() {
   	const length = this.state.slack_id.length;
-  	if (length === 0) return 'error'
+  	if (length === 0) return 'error';
 
     var id = this.state.slack_id;
-    var requirement = new RegExp('[A-Z,~!@#$%^&*()+=\\\\/"\'?<>`}{\\][\\|]')
+    var requirement = new RegExp('[A-Z,~!@#$%^&*()+=\\\\/"\'?<>`}{\\][\\|]');
     if (!requirement.test(id)) return 'success';
     else return 'error';
   }
 
   getValidationStateEmail() {
     if (this.state.email.length == 0) return 'warning';
-    if (this.state.email.indexOf('@') <= 0 || this.state.email.indexOf('@') > this.state.email.length - 2 ){
+    if (this.state.email.indexOf('@') <= 0 || this.state.email.indexOf('@') > this.state.email.length - 2 ) {
       return 'error';
     } 
-    if (this.state.email.indexOf('@') > 0 &&  this.state.email.indexOf('@') < this.state.email.length - 1){
+    if (this.state.email.indexOf('@') > 0 &&  this.state.email.indexOf('@') < this.state.email.length - 1) {
       return 'success' 
     } 
   }
@@ -89,15 +89,15 @@ export default class Signup extends Component {
   }
 
   _handleSubmit = (e) => {
-    e.preventDefault()
-    console.log(this.state)
+    e.preventDefault();
+    console.log(this.state);
     jQuery.ajax({
         method: "POST",
         url: '/account_signup',
         data: this.state,
         success: () => {
-          console.log("return home now")
-          window.location.replace("/")
+          console.log("return home now");
+          window.location.replace("/");
         },
         error: () => {
           alert("User ID already exists! Try again.");

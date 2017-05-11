@@ -3,7 +3,7 @@ import { Alert, Collapse, DropdownButton, MenuItem, Col, Row, Button, Form, Form
 import Navigator from 'components/Navigator'
 
 export default class Ticker extends Component {
-  constructor(){
+  constructor() {
     super();
     this.state = {
       tickers : [],
@@ -37,30 +37,30 @@ export default class Ticker extends Component {
   };
 
   deleteToken = (e) => {
-    if (e.target.name == 'signoff'){
+    if (e.target.name == 'signoff') {
       delete localStorage.token;
-      console.log("DELETING TOKEN")
+      console.log("DELETING TOKEN");
       this.setState({ loggedIn : false, watchSwitch : false});
-      this.setState({ tickers : [] })
+      this.setState({ tickers : [] });
     }
   }
 
-  componentWillMount(){
-    if (localStorage.token){
-      console.log("loggedIn is now true")
+  componentWillMount() {
+    if (localStorage.token) {
+      console.log("loggedIn is now true");
       this.setState({ loggedIn : true });
       this.getUserInfo();
     }
   }
 
-  getUserInfo(){
+  getUserInfo() {
     jQuery.ajax({
       method: "GET",
       url: '/user',
       data: { token : localStorage.token },
       success: (result) => {
-        this.setState({ first_name : result.first_name, user_id : result.id })
-        console.log(`current user id :: ${result.id}`)
+        this.setState({ first_name : result.first_name, user_id : result.id });
+        console.log(`current user id :: ${result.id}`);
         this.pollAlerts(result.id);
         this.getSavedTickers(result.id);
       }
@@ -76,9 +76,8 @@ export default class Ticker extends Component {
         success: (results) => {
           var array = results.map((result) => {
            return `${result.name} (Price: ${result.price}) => Price changed by ${result.volatility}%!\r`
-          })
-          console.log(array)
-          alert(array)
+          });
+          alert(array);
         }
       });
     }, 30000);
@@ -90,9 +89,9 @@ export default class Ticker extends Component {
       url: '/getSavedTickers',
       data: { user_id },
       success: (result) => {
-        console.log("saved :", result)
+        console.log("saved :", result);
         
-        for (var i = 0 ; i < result.length ; i++){
+        for (var i = 0 ; i < result.length ; i++) {
           var newTicker = {
             name: result[i]['name'],
             symbol: result[i]['symbol'],
@@ -110,20 +109,18 @@ export default class Ticker extends Component {
     });
   }
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     clearInterval(this.alertPoll);
     clearInterval(this.priceRef);
   }
 
   pickPercent(e, item) {
-    console.log("item", item)
-    console.log("change percent to : ", e.target.value)
     let tickers = this.state.tickers.slice(0);
     tickers.filter((pickedItem) => {
-      if (pickedItem.id === item.id){
+      if (pickedItem.id === item.id) {
         pickedItem['volPercent'] = parseFloat(e.target.value);
       }
-    })
+    });
     this.setState({ tickers: tickers });
   }
 
@@ -134,7 +131,7 @@ export default class Ticker extends Component {
       url: '/stopWatching',
       data: { input: this.state.user_id },
       success: (result) => {
-        this.setState({watchSwitch: !this.state.watchSwitch})
+        this.setState({watchSwitch: !this.state.watchSwitch});
       }
     });
   }
@@ -151,18 +148,18 @@ export default class Ticker extends Component {
       url: '/watch',
       data: { input: this.state },
       success: (result) => {
-        this.setState({ watchingTickers : result })
+        this.setState({ watchingTickers : result });
         let tickers = this.state.tickers.slice(0);
-        for (var i = 0 ; i < Object.keys(result).length ; i++){
-          if (tickers[i]['short_symbol'] === this.state.watchingTickers[i]['t']){
-            tickers[i]['price'] = this.state.watchingTickers[i]['l_fix']
+        for (var i = 0 ; i < Object.keys(result).length ; i++) {
+          if (tickers[i]['short_symbol'] === this.state.watchingTickers[i]['t']) {
+            tickers[i]['price'] = this.state.watchingTickers[i]['l_fix'];
           } else {
-            console.log("Something went wrong when retrieving price.")
-            tickers[i]['price'] = 'ERROR'
+            console.log("Something went wrong when retrieving price.");
+            tickers[i]['price'] = 'ERROR';
           }
         }
         this.setState({ tickers: tickers, watchSwitch: !this.state.watchSwitch });
-        console.log("CHANGED TICKER STATE ", tickers)
+        console.log("CHANGED TICKER STATE ", tickers);
       }
     })
     this.refreshPrice();
@@ -176,20 +173,20 @@ export default class Ticker extends Component {
         data: { user_id: this.state.user_id },
         success: (arr) => {
           let tickers = this.state.tickers.slice(0);
-          for (var i = 0 ; i < tickers.length ; i++){
-            for (var j = 0 ; j < arr.length; j++){
-              if (tickers[i]['symbol'] === arr[j]['symbol']){
+          for (var i = 0 ; i < tickers.length ; i++) {
+            for (var j = 0 ; j < arr.length; j++) {
+              if (tickers[i]['symbol'] === arr[j]['symbol']) {
                 tickers[i]['price'] = arr[j]['price'];
               }
             }
           }
-          this.setState({ tickers: tickers })
+          this.setState({ tickers: tickers });
         }
       });
     }, 30000);
   }
 
-  checkTickerBeforeAdd(e){
+  checkTickerBeforeAdd(e) {
     e.preventDefault();
     if (this.state.tickers.length <= 4) {
       jQuery.ajax({
@@ -197,28 +194,28 @@ export default class Ticker extends Component {
         url: '/checkTicker',
         data: {input : `${this.state.index}:${this.state.text}`},
         success: (result) => {
-          if (result !== "Nothing Found"){
+          if (result !== "Nothing Found") {
             var validAdd = result.split(",");
             var compName = validAdd[0];
             var compSymbol = validAdd[1].trim();
-            for (var i = 0 ; i < this.state.tickers.length ; i++){
-              if (this.state.tickers[i].symbol === compSymbol){
+            for (var i = 0 ; i < this.state.tickers.length ; i++) {
+              if (this.state.tickers[i].symbol === compSymbol) {
                 alert("Ticker already exists in the list.");
                 return;
               }
             }
-            this.handleTickerSubmit(compName, compSymbol)
+            this.handleTickerSubmit(compName, compSymbol);
           } else {
-            alert("Ticker does not exist.")
+            alert("Ticker does not exist.");
           }
         }
-      })
+      });
     } else {
-      alert("Max 5 tickers are permitted.")
+      alert("Max 5 tickers are permitted.");
     }
   }
 
-  handleTickerSubmit(name, symbol){
+  handleTickerSubmit(name, symbol) {
     var short_symbol = symbol.split(':')[1].toUpperCase().toString().trim();
     var newTicker = {
       //text: `${this.state.index}:${this.state.text}`,
@@ -235,32 +232,28 @@ export default class Ticker extends Component {
     }));
   }
 
-  handleDropdown(event){
+  handleDropdown(event) {
     this.setState({index : event})
   }
 
-  handleRemove(item){
+  handleRemove(item) {
     jQuery.ajax({
       method: "POST",
       url: '/deleteSubs',
       data: {user_id: this.state.user_id, symbol: item.symbol},
       success: (result) => {
-        console.log("Success in deletion.", result)
+        console.log("Success in deletion.", result);
       }
-    })
+    });
 
     var newTickers = this.state.tickers.filter((pickedItem) => {
-      return pickedItem.id !== item.id
-    })
-    this.setState({ tickers : newTickers })
+      return pickedItem.id !== item.id;
+    });
+    this.setState({ tickers : newTickers });
   }
 
-  typeTicker(e){
+  typeTicker(e) {
     this.setState({text: e.target.value});
-  }
-
-  test(e){
-    console.log("watchSwitch", this.state.watchSwitch) //<button onClick={(e) => this.test(e)}>test</button>
   }
 
   render() {
@@ -347,7 +340,7 @@ class TickerList extends Component {
             </Button>
           }
         </ul>
-    )
+    );
   }
 }
 

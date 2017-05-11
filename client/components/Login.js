@@ -7,7 +7,7 @@ import { Form, FormGroup, FormControl, Col, ControlLabel, Checkbox, Button, Aler
 
 export default class Login extends Component{
 	
-	constructor(){
+	constructor() {
 		super();
 		this.state = {
 			email : '',
@@ -23,10 +23,10 @@ export default class Login extends Component{
 		this.login(email, password)
 	}
 
-	login(email, password){
-		if (!localStorage.token){	
+	login(email, password) {
+		if (!localStorage.token) {	
 			this.sendRequest(email, password, (res) => {
-				if (res.authenticated){
+				if (res.authenticated) {
 					localStorage.token = res.token;
 					//saveToken(res.token);
 					this.props.getToken(res.token);
@@ -41,11 +41,11 @@ export default class Login extends Component{
 		}
 	}
 
-	componentWillMount(){
+	componentWillMount() {
 		this.render();
 	}
 
-	sendRequest(email, password, cb){
+	sendRequest(email, password, cb) {
 		setTimeout(() => {
 			jQuery.ajax({
 				method: "POST",
@@ -53,30 +53,30 @@ export default class Login extends Component{
 				data: this.state,
 				success: (result) => {
 					console.log("from BACKEND: "+result)
-					if (result.success){
-						console.log("SUCCESS")
+					if (result.success) {
+						console.log("SUCCESS");
 						cb({
 							authenticated: true,
 							token: result.token,
 							first_name: result.first_name,
 							user_id: result.user_id,
 						})
-						this.setState({ error : false })
+						this.setState({ error : false });
 					} else {
-						console.log("FAILED LOGIN")
-						cb({ authenticated: false })
-						this.setState({ error : true })
+						console.log("FAILED LOGIN");
+						cb({ authenticated: false });
+						this.setState({ error : true });
 					}
 				}
-			})
-		}, 0)
+			});
+		}, 0);
 	}
 
 	handleChange = (e) => {
-		this.setState({[e.target.name] : e.target.value})
+		this.setState({[e.target.name] : e.target.value});
 	}
 
-	render(){
+	render() {
 		return (
 		  <Form horizontal onSubmit={this._handleSubmit}>
 		    <FormGroup controlId="formHorizontalEmail">
