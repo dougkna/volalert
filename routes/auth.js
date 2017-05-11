@@ -1,5 +1,5 @@
 var User = require('../models/user');
-var crypto = require('crypto')
+var crypto = require('crypto');
 
 function signup(req, res) {
 
@@ -8,7 +8,7 @@ function signup(req, res) {
     if (duplicate) {
       res.status(401).send();
     }
-  })
+  });
 
   var hash = crypto.createHash('md5').update(req.body.password).digest('hex');
   req.body.password = hash;
@@ -19,7 +19,7 @@ function signup(req, res) {
       return;
     }
     res.status(200).send();
-  })
+  });
 }
 
 function login(req, res) {
@@ -67,7 +67,7 @@ function getUser(req,res) {
       res.json({first_name : user.first_name, id : user.id});
 
     }
-  })
+  });
 }
 
 module.exports = {
