@@ -9,17 +9,18 @@ Clone repository and run
 https://volalert.herokuapp.com/
 
 ID : de@mo.com
+
 Password : demo
 
 
 ## Instruction
 
-- 1. Sign up an account and log in.
-- 2. Add interested stock index and ticker (up to ten tickers).
-- 3. For each ticker, pick a target volatility you want to be alerted.
+- Sign up an account and log in.
+- Add interested stock index and ticker (up to ten tickers).
+- For each ticker, pick a target volatility you want to be alerted.
   (2% = At least 2% difference in stock price in the previous 1 minute.)
-- 4. Click 'Start Watching' - You will automatically be alerted if your volatility is triggered.
-- 5. You may stop watching at any time. Your list will be saved. 
+- Click 'Start Watching' - You will automatically be alerted if your volatility is triggered.
+- You may stop watching at any time. Your list will be saved. 
 
 ## Requirements
 node 5+
