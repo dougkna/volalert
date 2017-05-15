@@ -188,7 +188,7 @@ export default class Ticker extends Component {
 
   checkTickerBeforeAdd(e) {
     e.preventDefault();
-    if (this.state.tickers.length <= 4) {
+    if (this.state.tickers.length <= 9) {
       jQuery.ajax({
         method: "GET",
         url: '/checkTicker',
@@ -211,7 +211,7 @@ export default class Ticker extends Component {
         }
       });
     } else {
-      alert("Max 5 tickers are permitted.");
+      alert("Max 10 tickers are permitted.");
     }
   }
 
@@ -339,6 +339,16 @@ class TickerList extends Component {
             <Button className="watch-button" block onClick={this.props.stopWatching}> Stop Watching All
             </Button>
           }
+          <div style={{marginTop: '80px'}}></div>
+          <div className='list-input-bar' style={{fontSize: '14px', color: '#b1b8bc'}}>
+            <ul>- INSTRUCTION -</ul>
+            <ul>1. Sign up an account and log in.</ul>
+            <ul>2. Add interested stock index and ticker (up to ten tickers).</ul>
+            <ul>3. For each ticker, pick a target volatility you want to be alerted.</ul>
+            <ul>&emsp;(2% = At least 2% difference in stock price in the previous 1 minute.)</ul>
+            <ul>4. Click 'Start Watching' - You will automatically be alerted if your volatility is triggered.</ul>
+            <ul>5. You may stop watching at any time. Your list will be saved. </ul>
+          </div>
         </ul>
     );
   }
