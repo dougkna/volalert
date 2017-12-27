@@ -5,7 +5,7 @@
 Clone repository and run
 
 
-## Demo Account
+## Demo Account (UPDATE: GOOGLE FINANCE API IS DEPRECATED)
 https://volalert.herokuapp.com/
 
 ID : de@mo.com
